@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slasher Control Panel | Ultimate Master Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #0b0f19; color: #f3f4f6; font-family: sans-serif; padding: 40px 20px; margin: 0; }
+        .admin-container { max-width: 750px; margin: auto; display: flex; flex-direction: column; gap: 25px; }
+        .admin-box { background: #111827; padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+        h1 { font-size: 22px; color: #fbbf24; margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
+        h2 { font-size: 16px; color: #bc13fe; text-transform: uppercase; margin-top: 25px; margin-bottom: 15px; letter-spacing: 0.5px; border-left: 4px solid #bc13fe; padding-left: 10px; }
+        
+        .panel-section { background: #1f2937; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 12px; }
+        .panel-header-row { display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { font-size: 14px; color: #fbbf24; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+        .form-group { text-align: left; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+        .controls-row { display: flex; gap: 15px; align-items: center; }
+        label { font-size: 11px; color: #9ca3af; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
+        input[type="number"], input[type="text"] { width: 100%; padding: 10px; background: #090d16; border: 1px solid #374151; border-radius: 8px; color: #fff; font-size: 15px; box-sizing: border-box; font-weight: bold; }
+        input:focus, textarea:focus { border-color: #fbbf24; outline: none; }
+        
+        /* Toggle Switch Styling */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ef4444; transition: .3s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: #10b981; }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .status-badge { font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; }
+        
+        .btn-action { width: 100%; border: none; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-save { background: linear-gradient(90deg, #fbbf24, #d97706); color: #000; }
+        .btn-generate { background: linear-gradient(90deg, #3b82f6, #1d4ed8); color: #fff; }
+        .btn-upload { background: linear-gradient(90deg, #bc13fe, #8b5cf6); color: #fff; }
+        .btn-copy { background: #10b981; color: #fff; width: auto; padding: 8px 15px; font-size: 12px; border-radius: 6px; }
+        .btn-action:hover { opacity: 0.9; }
+        
+        .alert { padding: 12px; border-radius: 10px; font-size: 14px; margin-top: 15px; display: none; font-weight: bold; text-align: center; }
+        .alert.success { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        
+        .output-box { display: none; background: #1f2937; padding: 20px; border-radius: 12px; border: 1px solid #374151; margin-top: 15px; }
+        textarea { width: 100%; height: 160px; background: #090d16; color: #34d399; font-family: monospace; font-size: 12px; padding: 12px; border: 1px solid #2d3748; border-radius: 8px; resize: vertical; box-sizing: border-box; margin-top: 8px; margin-bottom: 10px; line-height: 1.5; }
+        .no-data { color: #64748b; font-size: 13px; font-style: italic; text-align: center; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+        
+        .link-display-box { background: #090d16; border: 1px dashed #fbbf24; padding: 12px; border-radius: 8px; word-break: break-all; color: #38bdf8; font-family: monospace; font-size: 12px; margin-top: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        
+        /* Dynamic History Component Styles */
+        .history-list { display: flex; flex-direction: column; gap: 12px; max-height: 350px; overflow-y: auto; padding-right: 5px; }
+        .history-card { background: #1f2937; border: 1px solid rgba(255,255,255,0.05); padding: 14px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .history-row { display: flex; justify-content: space-between; align-items: center; }
+        .history-id { font-weight: bold; font-family: monospace; color: #38bdf8; font-size: 14px; }
+        .history-meta { font-size: 11px; color: #9ca3af; }
+        .history-actions { display: flex; gap: 8px; margin-top: 4px; }
+        .btn-h-copy { background: #374151; color: #fff; padding: 6px 12px; font-size: 11px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; flex: 1; }
+        .btn-h-edit { background: #d97706; color: #fff; padding: 6px 12px; font-size: 11px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; flex: 1; }
+        .btn-h-del { background: #ef4444; color: #fff; padding: 6px 12px; font-size: 11px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; flex: 1; }
+        .btn-h-copy:hover, .btn-h-edit:hover, .btn-h-del:hover { opacity: 0.8; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="admin-container">
+
+    <div id="redirect-ui" class="admin-box" style="display: none; text-align: center; padding: 50px 30px;">
+        <div id="redirect-content">
+            <h1 style="color: #ef4444; border-none: none; font-size: 26px;"><i class="fas fa-exclamation-triangle"></i> PAGE NOT WORKING</h1>
+            <p style="color: #9ca3af; font-size: 14px; margin-top: 10px;">The requested structural channel blueprint does not exist, has been completely disabled, or deleted by the administrator.</p>
+        </div>
+    </div>
+
+    <div id="main-admin-ui">
+        
+        <div class="admin-box" style="margin-bottom: 25px;">
+            <h1><i class="fas fa-sliders-h"></i> Synchronized Multi-Panels</h1>
+            <div id="dynamicPanelsContainer">
+                <div class="no-data">Loading synchronized database configurations...</div>
+            </div>
+            <button class="btn-action btn-save" id="saveBtn"><i class="fas fa-save"></i> Save Dashboard Status Changes</button>
+            <div class="alert success" id="successAlert"><i class="fas fa-check-circle"></i> Configurations Synchronized Successfully!</div>
+        </div>
+
+        <div class="admin-box" style="margin-bottom: 25px;">
+            <h1><i class="fas fa-shield-alt"></i> HTML Code Encryptor & Host Linker</h1>
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label><i class="fas fa-file-signature"></i> Assign Custom Slug ID Name</label>
+                <input type="text" id="uploadLinkName" placeholder="e.g., secret_panel, live-promo" value="">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label><i class="fas fa-code"></i> Paste Your Raw HTML Code Below</label>
+                <textarea id="rawHtmlInput" placeholder="<html><body><h1>Dashboard Engine</h1></body></html>..." style="color: #f3f4f6;"></textarea>
+            </div>
+
+            <button class="btn-action btn-upload" id="encryptUploadBtn"><i class="fas fa-link"></i> Encrypt & Deploy Secure Cloud Link</button>
+            <button class="btn-action" id="cancelLinkEditBtn" style="background: #4b5563; color: #fff; margin-top: 10px; display: none;">Cancel Link Update</button>
+
+            <div class="output-box" id="uploadOutputContainer">
+                <label style="color: #fbbf24;"><i class="fas fa-globe"></i> Active Executable Hash Link (Code Obfuscated):</label>
+                <div class="link-display-box">
+                    <span id="generatedLinkSpan">Ready...</span>
+                    <button class="btn-action btn-copy" id="copyLinkBtn" style="padding: 5px 10px; font-size: 11px;"><i class="fas fa-copy"></i> Copy</button>
+                </div>
+            </div>
+
+            <h2><i class="fas fa-history"></i> Deployed HTML Links History</h2>
+            <div class="history-list" id="htmlLinksHistoryContainer">
+                <div class="no-data">No custom HTML hosted links logged in database core logs.</div>
+            </div>
+        </div>
+
+        <div class="admin-box">
+            <h1><i class="fas fa-code"></i> Panel Engine Generator</h1>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label><i class="fas fa-fingerprint"></i> Unique Panel Key Identifier ID</label>
+                <input type="text" id="newPanelId" placeholder="e.g., panel_4, bonus_reward" value="">
+            </div>
+            <button class="btn-action btn-generate" id="generateBtn"><i class="fas fa-magic"></i> Compile & Register Panel Engine</button>
+
+            <div class="output-box" id="outputContainer">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="color: #fbbf24;"><i class="fas fa-terminal"></i> Compiled Output Script Code:</label>
+                    <button class="btn-action btn-copy" id="copyBtn"><i class="fas fa-copy"></i> Copy Code</button>
+                </div>
+                <textarea id="codeOutput" readonly></textarea>
+            </div>
+
+            <h2><i class="fas fa-folder-open"></i> Generated Panel Engines Logs</h2>
+            <div class="history-list" id="panelsHistoryContainer">
+                <div class="no-data">No generated dynamic panel configurations registered.</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, get, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDnM9ry5JreqjRXqQVUSiaBzudXuaAF-QI", 
+        databaseURL: "https://send-message-b178e-default-rtdb.asia-southeast1.firebasedatabase.app" 
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    
+    const nodesRef = ref(db, 'admin_settings/dynamic_panels');
+    const hostedLinksNodePath = 'admin_settings/hosted_html_links';
+
+    let globalPanelsObject = {};
+    let activeEditingSlugKey = null;
+
+    // ==========================================
+    // DEPLOYED HASH CHECK & ROUTING INTERCEPTOR
+    // ==========================================
+    const urlPayloadHashToken = window.location.hash.substring(1).trim().toLowerCase();
+
+    if (urlPayloadHashToken) {
+        document.getElementById('main-admin-ui').style.display = 'none';
+        document.getElementById('redirect-ui').style.display = 'block';
+
+        get(ref(db, `${hostedLinksNodePath}/${urlPayloadHashToken}`)).then((snapshot) => {
+            if (snapshot.exists()) {
+                const cloudData = snapshot.val();
+                try {
+                    // Injecting clean structure directly to user view layer frame
+                    const evaluationScriptBlock = decodeURIComponent(escape(atob(cloudData.encrypted_data)));
+                    document.open();
+                    document.write(evaluationScriptBlock);
+                    document.write(`
+                        <script>
+                            document.addEventListener('contextmenu', e => e.preventDefault());
+                            document.onkeydown = function(e) {
+                                if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) || (e.ctrlKey && e.keyCode == 85)) {
+                                    return false;
+                                }
+                            };
+                        <\/script>
+                    `);
+                    document.close();
+                } catch (err) {
+                    showFallbackErrorUI();
+                }
+            } else {
+                showFallbackErrorUI();
+            }
+        }).catch(() => {
+            showFallbackErrorUI();
+        });
+    } else {
+        initDashboardFramework();
+    }
+
+    function showFallbackErrorUI() {
+        document.getElementById('main-admin-ui').style.display = 'none';
+        document.getElementById('redirect-ui').style.display = 'block';
+    }
+
+    function initDashboardFramework() {
+        // Setup live listener loops for components history tracking logs
+        listenToDatabaseLinksHistory();
+        listenToPanelsDatabaseHistory();
+
+        window.toggleBadgeState = (panelId, isChecked) => {
+            const badge = document.getElementById(`badge_${panelId}`);
+            if(badge) {
+                badge.innerText = isChecked ? 'active' : 'deactivated';
+                badge.style.color = isChecked ? '#10b981' : '#ef4444';
+                badge.style.background = isChecked ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+            }
+        };
+    }
+
+    // ==========================================
+    // REAL-TIME LISTENER FOR ENGINE PANELS
+    // ==========================================
+    function listenToPanelsDatabaseHistory() {
+        onValue(nodesRef, (snapshot) => {
+            const container = document.getElementById('dynamicPanelsContainer');
+            const historyContainer = document.getElementById('panelsHistoryContainer');
+            
+            container.innerHTML = "";
+            historyContainer.innerHTML = "";
+
+            if (!snapshot.exists()) {
+                container.innerHTML = `<div class="no-data">No active panels deployed. Enter custom configurations below.</div>`;
+                historyContainer.innerHTML = `<div class="no-data">No dynamic panel engines logged.</div>`;
+                globalPanelsObject = {};
+                return;
+            }
+
+            globalPanelsObject = snapshot.val();
+            
+            for (const panelId in globalPanelsObject) {
+                const currentData = globalPanelsObject[panelId];
+                const isActive = currentData.status === "active";
+
+                // Form Config Section Element Mapping
+                const configBlockHtml = `
+                    <div class="panel-section" data-id="${panelId}">
+                        <div class="panel-header-row">
+                            <div class="panel-title"><i class="fas fa-layer-group"></i> ${panelId.toUpperCase()}</div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="status-badge" id="badge_${panelId}" style="background: ${isActive ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}; color: ${isActive ? '#10b981' : '#ef4444'};">
+                                    ${currentData.status}
+                                </span>
+                                <label class="switch">
+                                    <input type="checkbox" id="toggle_${panelId}" ${isActive ? 'checked' : ''} onchange="window.toggleBadgeState('${panelId}', this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="controls-row">
+                            <div class="form-group">
+                                <label>Cooldown Intermission (Minutes)</label>
+                                <input type="number" id="input_${panelId}" value="${currentData.cooldown_minutes || 5}" min="1" max="1440">
+                            </div>
+                        </div>
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', configBlockHtml);
+
+                // History Logger Dynamic Render
+                const panelHistoryCardHtml = `
+                    <div class="history-card">
+                        <div class="history-row">
+                            <span class="history-id"><i class="fas fa-microchip"></i> #${panelId}</span>
+                            <span class="status-badge" style="background: ${isActive ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}; color: ${isActive ? '#10b981' : '#ef4444'};">${currentData.status}</span>
+                        </div>
+                        <div class="history-meta">Cooldown: <b>${currentData.cooldown_minutes} Mins</b></div>
+                        <div class="history-actions">
+                            <button class="btn-h-edit" onclick="triggerPanelRecompilation('${panelId}')"><i class="fas fa-code"></i> View Code</button>
+                            <button class="btn-h-del" onclick="completelyPurgePanelEngine('${panelId}')"><i class="fas fa-trash-alt"></i> Delete Engine</button>
+                        </div>
+                    </div>`;
+                historyContainer.insertAdjacentHTML('beforeend', panelHistoryCardHtml);
+            }
+        });
+    }
+
+    // ==========================================
+    // REAL-TIME LISTENER FOR HOSTED HTML LINKS
+    // ==========================================
+    function listenToDatabaseLinksHistory() {
+        onValue(ref(db, hostedLinksNodePath), (snapshot) => {
+            const container = document.getElementById('htmlLinksHistoryContainer');
+            container.innerHTML = "";
+
+            if (!snapshot.exists()) {
+                container.innerHTML = `<div class="no-data">No custom HTML hosted links logged in database core logs.</div>`;
+                return;
+            }
+
+            const linksCollectionData = snapshot.val();
+            Object.keys(linksCollectionData).reverse().forEach(slugKey => {
+                const targetLinkItem = linksCollectionData[slugKey];
+                const cleanAbsoluteHashUrl = window.location.origin + window.location.pathname + "#" + slugKey;
+                const formattedDateString = new Date(targetLinkItem.timestamp).toLocaleString();
+
+                const linkHistoryCardTemplate = `
+                    <div class="history-card">
+                        <div class="history-row">
+                            <span class="history-id"><i class="fas fa-link"></i> /#${slugKey}</span>
+                            <span class="history-meta">${formattedDateString}</span>
+                        </div>
+                        <div class="history-meta" style="color: #64748b; font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Data Payload size: ${targetLinkItem.encrypted_data.length} chars</div>
+                        <div class="history-actions">
+                            <button class="btn-h-copy" onclick="directCopyBufferToClipboard('${cleanAbsoluteHashUrl}')"><i class="fas fa-copy"></i> URL</button>
+                            <button class="btn-h-edit" onclick="setupLinkDataForActiveEdit('${slugKey}')"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="btn-h-del" onclick="completelyPurgeCloudLink('${slugKey}')"><i class="fas fa-trash-alt"></i> Delete</button>
+                        </div>
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', linkHistoryCardTemplate);
+            });
+        });
+    }
+
+    // ==========================================
+    // GLOBAL EXPOSED ACTION CORE LOGIC CONTROLLERS
+    // ==========================================
+    window.directCopyBufferToClipboard = (textStreamValue) => {
+        navigator.clipboard.writeText(textStreamValue).then(() => {
+            alert("Secure executable hash address copied directly to clipboard!");
+        });
+    };
+
+    window.completelyPurgeCloudLink = async (targetSlugKey) => {
+        if (confirm(`Are you completely sure you want to delete /#${targetSlugKey}? Users opening it will face a "PAGE NOT WORKING" frame error layout.`)) {
+            try {
+                await remove(ref(db, `${hostedLinksNodePath}/${targetSlugKey}`));
+                alert("Cloud link frame purged successfully.");
+            } catch (err) { alert("Failed to clear network record node."); }
+        }
+    };
+
+    window.completelyPurgePanelEngine = async (targetPanelIdKey) => {
+        if (confirm(`Delete engine key entity [${targetPanelIdKey}] completely? The embedded instances will show "CONFIG EXPIRED/NOT WORKING" layouts inside matching targets.`)) {
+            try {
+                await remove(ref(db, `admin_settings/dynamic_panels/${targetPanelIdKey}`));
+                alert("Dynamic configuration engine cleared successfully.");
+            } catch (err) { alert("Failed to clear database entry entity node."); }
+        }
+    };
+
+    window.setupLinkDataForActiveEdit = async (targetSlugKey) => {
+        try {
+            const dataSnapshot = await get(ref(db, `${hostedLinksNodePath}/${targetSlugKey}`));
+            if (dataSnapshot.exists()) {
+                activeEditingSlugKey = targetSlugKey;
+                const cloudRecordItem = dataSnapshot.val();
+                
+                document.getElementById('uploadLinkName').value = targetSlugKey;
+                document.getElementById('uploadLinkName').disabled = true; // Lock slug name input fields inside update modes
+                document.getElementById('rawHtmlInput').value = decodeURIComponent(escape(atob(cloudRecordItem.encrypted_data)));
+                
+                document.getElementById('encryptUploadBtn').innerText = "Update & Synchronize Existing Cloud Entry Link";
+                document.getElementById('cancelLinkEditBtn').style.display = "block";
+                window.scrollTo({ top: document.getElementById('uploadLinkName').offsetTop - 20, behavior: 'smooth' });
+            }
+        } catch (e) { alert("Error fetching data record reference payload."); }
+    };
+
+    document.getElementById('cancelLinkEditBtn').addEventListener('click', () => {
+        resetLinkHostingInputFields();
+    });
+
+    function resetLinkHostingInputFields() {
+        activeEditingSlugKey = null;
+        document.getElementById('uploadLinkName').value = "";
+        document.getElementById('uploadLinkName').disabled = false;
+        document.getElementById('rawHtmlInput').value = "";
+        document.getElementById('encryptUploadBtn').innerText = "Encrypt & Deploy Secure Cloud Link";
+        document.getElementById('cancelLinkEditBtn').style.display = "none";
+        document.getElementById('uploadOutputContainer').style.display = 'none';
+    }
+
+    window.triggerPanelRecompilation = (targetPanelIdKey) => {
+        document.getElementById('newPanelId').value = targetPanelIdKey;
+        document.getElementById('generateBtn').click();
+        window.scrollTo({ top: document.getElementById('newPanelId').offsetTop - 20, behavior: 'smooth' });
+    };
+
+    // Save Dashboard Multi-Panel Elements Settings
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+        const sections = document.querySelectorAll('.panel-section');
+        let dataToUpdate = {};
+        sections.forEach(sec => {
+            const id = sec.getAttribute('data-id');
+            const cooldownValue = parseInt(document.getElementById(`input_${id}`).value);
+            const statusCheck = document.getElementById(`toggle_${id}`).checked ? "active" : "deactivated";
+            if (!isNaN(cooldownValue) && cooldownValue >= 1) {
+                dataToUpdate[id] = { cooldown_minutes: cooldownValue, status: statusCheck };
+            }
+        });
+        try {
+            await set(nodesRef, dataToUpdate);
+            const alertBox = document.getElementById('successAlert');
+            alertBox.style.display = 'block';
+            setTimeout(() => { alertBox.style.display = 'none'; }, 3000);
+        } catch (e) { alert("Error updating cloud node elements configuration databases."); }
+    });
+
+    // Encrypt & Upload Logic Workflow
+    document.getElementById('encryptUploadBtn').addEventListener('click', async () => {
+        const rawCodeTextValue = document.getElementById('rawHtmlInput').value.trim();
+        let targetSlugKey = document.getElementById('uploadLinkName').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
+
+        if (!rawCodeTextValue || !targetSlugKey) {
+            alert("Validation failure. Ensure HTML string syntax code and valid URL string identifier parameters are assigned.");
+            return;
+        }
+
+        if (!activeEditingSlugKey) {
+            // Check uniqueness constraints validations rules only inside new deployment workflows
+            const duplicateValidationSnapshot = await get(ref(db, `${hostedLinksNodePath}/${targetSlugKey}`));
+            if (duplicateValidationSnapshot.exists()) {
+                alert("Target identifier mapping slug already exists inside system. Use alternate configuration values or edit old entry via log lists.");
+                return;
+            }
+        }
+
+        const encryptedStringBase64Stream = btoa(unescape(encodeURIComponent(rawCodeTextValue)));
+
+        try {
+            await set(ref(db, `${hostedLinksNodePath}/${targetSlugKey}`), {
+                encrypted_data: encryptedStringBase64Stream,
+                timestamp: Date.now()
+            });
+
+            const absoluteCleanPermanentLink = window.location.origin + window.location.pathname + "#" + targetSlugKey;
+            document.getElementById('generatedLinkSpan').innerText = absoluteCleanPermanentLink;
+            document.getElementById('uploadOutputContainer').style.display = 'block';
+
+            navigator.clipboard.writeText(absoluteCleanPermanentLink).then(() => {
+                alert("Cloud deployment link successfully processed and loaded. Copied to Clipboard!");
+                resetLinkHostingInputFields();
+            });
+        } catch (err) { alert("Cloud pipeline deployment network link timeout processing error."); }
+    });
+
+    // Panel Engine Generator Logic Sequence Execution Block
+    document.getElementById('generateBtn').addEventListener('click', async () => {
+        const rawPanelIdStringKey = document.getElementById('newPanelId').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+        if (!rawPanelIdStringKey) { alert("Invalid structural unique Panel ID assigned."); return; }
+
+        if (!globalPanelsObject[rawPanelIdStringKey]) {
+            globalPanelsObject[rawPanelIdStringKey] = { cooldown_minutes: 5, status: "active" };
+            await set(nodesRef, globalPanelsObject);
+        }
+
+        let compiledEngineTemplateBody = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct Credit Dispatcher</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #030712; color: #fff; font-family: sans-serif; text-align: center; padding: 40px 20px; margin:0; }
+        .box { background: #111827; padding: 30px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.08); max-width: 380px; margin: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .panel-badge { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin-bottom: 15px; }
+        .icon { font-size: 50px; color: #fbbf24; margin-bottom: 20px; }
+        .icon.animated { animation: pulse 1.5s infinite; }
+        .bar-bg { background: #1f2937; height: 8px; border-radius: 10px; margin: 25px 0; overflow: hidden; }
+        .bar-fill { background: linear-gradient(90deg, #10b981, #059669); height: 100%; width: 0%; transition: width 1s linear; }
+        .status { font-weight: bold; color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; }
+        .device-display { background: #090d16; padding: 14px; border: 1px solid #1e293b; border-radius: 12px; color: #fbbf24; font-size: 16px; font-weight: bold; letter-spacing: 1px; margin-top: 10px; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="panel-badge"><i class="fas fa-robot"></i> credit points center</div>
+        <div id="iconContainer"><i class="fas fa-bolt icon animated"></i></div>
+        <h2 style="margin:0 0 10px 0; font-size: 20px;"> Credit Points </h2>
+        <p style="color:#64748b; font-size:13px; margin:0 0 15px 0;" id="descText">Wait 2 seconds...</p>
+        <div id="deviceBox" style="display:none; margin-top: 15px; text-align: left;">
+            <span style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;"><i class="fas fa-terminal"></i> User Profile name </span>
+            <div id="deviceIdLabel" class="device-display">SEARCHING...</div>
+        </div>
+        <div class="bar-bg"><div id="progress" class="bar-fill"></div></div>
+        <div id="txt" class="status">Searching...</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get, runTransaction, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDnM9ry5JreqjRXqQVUSiaBzudXuaAF-QI", 
+            databaseURL: "https://send-message-b178e-default-rtdb.asia-southeast1.firebasedatabase.app" 
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const CURRENT_PANEL_KEY = "__PANEL_ID__";
+
+        async function captureClientNetworkIP() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                return data.ip || "Unknown-IP";
+            } catch (e) { return "Offline-Fallback"; }
+        }
+
+        function showUIStatus(title, desc, iconHtml, txtHtml, progressPct) {
+            document.getElementById('deviceBox').style.display = 'block';
+            document.getElementById('deviceIdLabel').innerText = title;
+            document.getElementById('descText').innerText = desc;
+            document.getElementById('iconContainer').innerHTML = iconHtml;
+            document.getElementById('txt').innerHTML = txtHtml;
+            document.getElementById('progress').style.width = progressPct;
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const currentIp = await captureClientNetworkIP();
+            const now = Date.now();
+            try {
+                const configSnapshot = await get(ref(db, 'admin_settings/dynamic_panels/' + CURRENT_PANEL_KEY));
+                if (!configSnapshot.exists()) {
+                    showUIStatus("PAGE NOT WORKING", "This panel database structure deployment was removed or expired.", '<i class="fas fa-ban icon" style="color:#ef4444;"></i>', '<span style="color:#ef4444">CONFIG EXPIRED!</span>', "0%");
+                    return;
+                }
+                const remoteConfig = configSnapshot.val();
+                if (remoteConfig.status !== "active") {
+                    showUIStatus("PANEL DEACTIVATED BY ADMIN!", "This channel is currently offline.", '<i class="fas fa-power-off icon" style="color:#ef4444;"></i>', '<span style="color:#ef4444">DISABLED SYSTEM!</span>', "0%");
+                    return;
+                }
+
+                const cooldownMinutes = remoteConfig.cooldown_minutes || 5;
+                const cooldownMS = cooldownMinutes * 60 * 1000;
+
+                const localExpiry = localStorage.getItem('cooldown_' + CURRENT_PANEL_KEY + '_' + currentIp);
+                if (localExpiry && now < parseInt(localExpiry)) {
+                    showUIStatus("SORRY YOU ARE ALREADY CLAIMED!", "credit already add", '<i class="fas fa-lock icon" style="color:#64748b;"></i>', '<span style="color:#94a3b8">ALREADY CLAIMED!</span>', "0%");
+                    return;
+                }
+
+                showUIStatus("SCANNING NETWORK...", "User Profile Searching", '<i class="fas fa-bolt icon animated"></i>', "PROCESSING ...", "100%");
+                const snapshot = await get(ref(db, 'user_devices'));
+                const allDevices = snapshot.val() || {};
+                const matchedDeviceIds = [];
+                let hasActiveCooldown = false;
+
+                for (const deviceId in allDevices) {
+                    if (allDevices[deviceId].last_known_ip === currentIp) {
+                        const dbCooldown = allDevices[deviceId]['last_time_' + CURRENT_PANEL_KEY];
+                        if (dbCooldown && (now - dbCooldown < cooldownMS)) { hasActiveCooldown = true; }
+                        matchedDeviceIds.push(deviceId);
+                    }
+                }
+
+                if (hasActiveCooldown) {
+                    localStorage.setItem('cooldown_' + CURRENT_PANEL_KEY + '_' + currentIp, now + cooldownMS);
+                    showUIStatus("SORRY YOU ARE ALREADY CLAIMED!", "credit already add", '<i class="fas fa-lock icon" style="color:#64748b;"></i>', '<span style="color:#94a3b8">ALREADY CLAIMED!</span>', "0%");
+                    return;
+                }
+
+                if (matchedDeviceIds.length === 0) {
+                    showUIStatus("NO ACTIVE PROFILE FOUND!", "No account found matching this network IP.", '<i class="fas fa-exclamation-triangle icon" style="color:#ef4444;"></i>', '<span style="color:#ef4444">NO ACTIVE PROFILE!</span>', "0%");
+                    return;
+                }
+
+                document.getElementById('deviceIdLabel').innerText = matchedDeviceIds.length + " PROFILE(S) FOUND";
+                const creditDispatchPromises = matchedDeviceIds.map(id => {
+                    const singleCreditRef = ref(db, 'user_devices/' + id + '/credits');
+                    const deviceRef = ref(db, 'user_devices/' + id);
+                    let updates = {};
+                    updates['last_time_' + CURRENT_PANEL_KEY] = now;
+                    update(deviceRef, updates);
+                    return runTransaction(singleCreditRef, (currentBalance) => {
+                        if (currentBalance === null) return 1;
+                        return currentBalance + 1;
+                    });
+                });
+
+                await Promise.all(creditDispatchPromises);
+                localStorage.setItem('cooldown_' + CURRENT_PANEL_KEY + '_' + currentIp, now + cooldownMS);
+                showUIStatus(matchedDeviceIds.length + " PROFILE(S) FOUND", "Credits points successfully Add.", '<i class="fas fa-check-circle icon" style="color:#10b981;"></i>', '<span style="color:#10b981">1 CREDIT POINTS ADD Successfully!</span>', "100%");
+            } catch (err) { console.error(err); }
+        });
+    <\/script>
+</body>
+</html>`;
+
+        compiledEngineTemplateBody = compiledEngineTemplateBody.replace(/__PANEL_ID__/g, rawPanelIdStringKey);
+        document.getElementById('codeOutput').value = compiledEngineTemplateBody;
+        document.getElementById('outputContainer').style.display = 'block';
+    });
+
+    // Copy Button Controller Action Linkages
+    document.getElementById('copyBtn').addEventListener('click', () => {
+        const textTargetValueElement = document.getElementById('codeOutput');
+        textTargetValueElement.select();
+        navigator.clipboard.writeText(textTargetValueElement.value).then(() => {
+            const btn = document.getElementById('copyBtn');
+            btn.innerHTML = `<i class="fas fa-check"></i> Copied!`;
+            setTimeout(() => { btn.innerHTML = `<i class="fas fa-copy"></i> Copy Code`; }, 2000);
+        });
+    });
+
+    document.getElementById('copyLinkBtn').addEventListener('click', () => {
+        const targetOutputLinkSpan = document.getElementById('generatedLinkSpan').innerText;
+        navigator.clipboard.writeText(targetOutputLinkSpan).then(() => {
+            const btn = document.getElementById('copyLinkBtn');
+            btn.innerHTML = `<i class="fas fa-check"></i> Copied!`;
+            setTimeout(() => { btn.innerHTML = `<i class="fas fa-copy"></i> Copy`; }, 1500);
+        });
+    });
+</script>
+</body>
+                  </html>
